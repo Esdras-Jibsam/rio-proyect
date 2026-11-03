@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#091a28">
+    <meta
+      name="description"
+      content="Asistente virtual para consultas relacionadas con el proyecto Río Claro."
+    >
+    <title>Río Claro | Asistente virtual</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="login-screen" class="login-screen" aria-labelledby="login-title">
+        <a class="brand login-brand" href="/login" aria-label="Río Claro, inicio de sesión">
+          <img class="brand-mark" src="/logo.svg" alt="Río Claro, distribuidora de limpieza e higiene">
+        </a>
+        <div class="login-card">
+          <p class="eyebrow">ACCESO SEGURO</p>
+          <h1 id="login-title">Bienvenido a Río Claro</h1>
+          <p class="login-copy">Inicia sesión para continuar a los módulos autorizados.</p>
+          <form id="login-form" class="auth-form">
+            <label for="login-username">Usuario</label>
+            <input id="login-username" name="username" type="text" autocomplete="username" maxlength="50" required>
+            <label for="login-password">Contraseña</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+            <button id="login-button" class="send-button" type="submit">Ingresar</button>
+          </form>
+          <button id="guest-login-button" class="secondary-button guest-button" type="button">Entrar como Invitado</button>
+          <p id="login-status" class="auth-status" role="status" aria-live="polite"></p>
+        </div>
+        <p class="login-footer">Río Claro · Acceso protegido</p>
+      </section>
+
+      <div id="authenticated-app" hidden>
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Río Claro, inicio">
+          <img class="brand-mark" src="/logo.svg" alt="Río Claro, distribuidora de limpieza e higiene">
+        </a>
+        <div class="topbar-actions">
+          <span class="availability"><span aria-hidden="true"></span>En línea</span>
+          <span id="account-identity" class="account-identity"></span>
+          <button id="change-password-button" class="secondary-button header-action" type="button">Cambiar contraseña</button>
+          <button id="logout-button" class="secondary-button header-action" type="button">Cerrar sesión</button>
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            type="button"
+            aria-label="Activar modo oscuro"
+            aria-pressed="false"
+            title="Activar modo oscuro"
+          >
+            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20.2 15.1A8.4 8.4 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <nav id="module-navigation" class="module-navigation" aria-label="Módulos">
+        <a href="/asistente" data-permission="chatbot">Asistente Virtual</a>
+        <a href="/facturas" data-permission="invoices">Facturas</a>
+        <a href="/proveedores" data-permission="suppliers">Proveedores y pagos</a>
+        <a href="/entregas" data-permission="deliveries">Entregas e inventario</a>
+        <a href="/ventas" data-permission="sales">Ventas y desempeño</a>
+        <a href="/administracion/usuarios" data-permission="user_admin">Administración de usuarios</a>
+        <a href="/configuracion" data-permission="settings">Configuración</a>
+        <a href="/auditoria" data-permission="audit">Auditoría</a>
+      </nav>
+
+      <section id="forced-password-panel" class="forced-password-panel" aria-labelledby="forced-password-title" hidden>
+        <p class="eyebrow">PRIMER ACCESO</p>
+        <h1 id="forced-password-title">Actualiza tu contraseña</h1>
+        <p>Por seguridad, debes establecer una contraseña nueva antes de usar el sistema.</p>
+        <form id="forced-password-form" class="auth-form">
+          <label for="current-password">Contraseña temporal</label>
+          <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" maxlength="128" required>
+          <label for="new-password">Nueva contraseña</label>
+          <input id="new-password" name="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+          <label for="confirm-password">Confirmar nueva contraseña</label>
+          <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+          <button id="forced-password-submit" class="send-button" type="submit">Guardar contraseña</button>
+          <button id="password-cancel" class="secondary-button" type="button" hidden>Volver a la aplicación</button>
+        </form>
+        <p id="forced-password-status" class="auth-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <div id="app-content">
+      <section class="chat-card" aria-labelledby="chat-title">
+        <div class="chat-heading">
+          <div class="assistant-avatar" aria-hidden="true">
+            <img class="avatar-logo" src="/logo-mark.svg" alt="">
+          </div>
+          <div>
+            <p class="eyebrow">ASISTENTE VIRTUAL</p>
+            <h1 id="chat-title">Hola, ¿en qué te puedo ayudar?</h1>
+            <p class="heading-copy">Pregunta sobre el proyecto Río Claro y conversemos.</p>
+          </div>
+        </div>
+
+        <div
+          id="chat-history"
+          class="chat-history"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions text"
+          aria-label="Conversación"
+        >
+          <article class="message message-assistant">
+            <div class="message-avatar" aria-hidden="true">
+              <img class="avatar-logo" src="/logo-mark.svg" alt="">
+            </div>
+            <div class="message-content">
+              <p class="message-label">Río Claro</p>
+              <div class="bubble">
+                <p>¡Hola! Soy un asistente de inteligencia artificial. Puedo ayudarte con preguntas relacionadas con el proyecto Río Claro.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <p id="chat-status" class="visually-hidden" role="status" aria-live="polite"></p>
+
+        <form id="chat-form" class="composer">
+          <label class="visually-hidden" for="message-input">Escribe tu mensaje</label>
+          <textarea
+            id="message-input"
+            name="message"
+            rows="1"
+            maxlength="2000"
+            placeholder="Escribe tu pregunta..."
+            aria-label="Escribe tu mensaje"
+          ></textarea>
+          <div class="composer-actions">
+            <div class="voice-actions" aria-label="Opciones de voz">
+              <button
+                id="dictate-button"
+                class="icon-button"
+                type="button"
+                aria-label="Dictar mensaje"
+                title="Dictar mensaje"
+                hidden
+              >Dictar</button>
+            </div>
+            <button id="send-button" class="send-button" type="submit" aria-label="Enviar mensaje">
+              <span id="send-label">Enviar</span>
+              <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </form>
+
+        <p class="disclaimer">
+          <span aria-hidden="true">✦</span>
+          Este asistente usa inteligencia artificial. Verifica la información importante.
+        </p>
+      </section>
+
+      <details class="invoice-section" data-permission="invoices">
+        <summary class="invoice-toggle">
+          <span class="invoice-toggle-icon" aria-hidden="true">＋</span>
+          <span>
+            <span class="invoice-toggle-title">Facturas</span>
+            <span class="invoice-toggle-copy">Apartado independiente para guardar documentos</span>
+          </span>
+        </summary>
+        <section class="invoice-panel" aria-labelledby="invoice-title">
+          <div class="invoice-heading">
+            <div>
+              <p class="eyebrow">ARCHIVO PRIVADO</p>
+              <h2 id="invoice-title">Ejemplos, extracción y revisión</h2>
+            </div>
+            <span class="invoice-badge" aria-hidden="true">PDF · JPG · PNG</span>
+          </div>
+          <p class="invoice-copy">
+            Los ejemplos y documentos guardados solo se muestran con la cuenta autorizada; las cargas
+            se almacenan en una carpeta privada del servidor. La extracción usa OCR local
+            con modelos instalados; el archivo no se envía al chatbot ni a Azure. Usa solo
+            documentos que tengas permiso de almacenar y procesar. Máximo 10 MB y 20 páginas
+            por PDF. Antes de guardar se detectan copias idénticas y facturas con el mismo emisor
+            y folio; si ya existe una, se avisa y no se guarda otra. La revisión es preliminar y
+            no valida CFDI ante el SAT. En App Service,
+            configura una ruta persistente para conservar las cargas; el chat con Foundry
+            puede generar sus propios cargos de Azure.
+          </p>
+          <div class="section-session-controls">
+            <p id="invoice-user-status" class="section-user-status"></p>
+            <button id="invoice-load-button" class="send-button" type="button" disabled>Mostrar facturas</button>
+          </div>
+          <p id="invoice-status" class="invoice-status" role="status" aria-live="polite">
+            Carga y consulta no configuradas. Contacta al administrador.
+          </p>
+          <form id="invoice-form" class="invoice-form">
+            <label for="invoice-file">Selecciona una factura</label>
+            <input
+              id="invoice-file"
+              name="invoice"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+              aria-label="Selecciona una factura PDF, JPG o PNG"
+              disabled
+              required
+            >
+            <button id="invoice-upload-button" class="send-button invoice-submit" type="submit" disabled>
+              Guardar y analizar
+            </button>
+          </form>
+          <div id="invoice-records" class="invoice-records" aria-live="polite"></div>
+          <section id="invoice-preview" class="invoice-preview" aria-label="Vista previa de factura" hidden></section>
+          <section id="invoice-analysis" class="invoice-analysis" aria-live="polite" hidden></section>
+        </section>
+      </details>
+
+      <details class="supplier-section" data-permission="suppliers">
+        <summary class="supplier-toggle">
+          <span class="supplier-toggle-icon" aria-hidden="true">＋</span>
+          <span>
+            <span class="supplier-toggle-title">Proveedores y pagos</span>
+            <span class="supplier-toggle-copy">Consulta pagos, pendientes y vencimientos</span>
+          </span>
+        </summary>
+        <section class="supplier-panel" aria-labelledby="supplier-title">
+          <div class="supplier-heading">
+            <div>
+              <p class="eyebrow">SOLO PERSONAL AUTORIZADO</p>
+              <h2 id="supplier-title">Estado de pagos a proveedores</h2>
+            </div>
+            <span id="supplier-reference-date" class="supplier-reference"></span>
+          </div>
+          <p class="supplier-notice">
+            El documento fuente indica que la información es ficticia. Confirma los datos
+            en el sistema financiero antes de surtir pedidos o tomar decisiones de pago.
+          </p>
+          <div class="section-session-controls">
+            <p id="supplier-user-status" class="section-user-status"></p>
+            <button id="supplier-load-button" class="send-button" type="button" disabled>Consultar pagos</button>
+          </div>
+          <p id="supplier-status" class="supplier-status" role="status" aria-live="polite">
+            Consulta no configurada. Contacta al administrador.
+          </p>
+          <div id="supplier-results" class="supplier-results" hidden>
+            <div class="supplier-summary" aria-label="Resumen de pagos">
+              <div class="supplier-summary-item supplier-summary-paid">
+                <span>Pagados</span>
+                <strong id="supplier-count-paid">0</strong>
+              </div>
+              <div class="supplier-summary-item supplier-summary-pending">
+                <span>Pendientes</span>
+                <strong id="supplier-count-pending">0</strong>
+              </div>
+              <div class="supplier-summary-item supplier-summary-overdue">
+                <span>Vencidos</span>
+                <strong id="supplier-count-overdue">0</strong>
+              </div>
+            </div>
+            <div class="supplier-filter">
+              <label for="supplier-status-filter">Mostrar</label>
+              <select id="supplier-status-filter" aria-label="Filtrar pagos por estado">
+                <option value="all">Todos los pagos</option>
+                <option value="paid">Pagados</option>
+                <option value="pending">Pendientes</option>
+                <option value="overdue">Vencidos</option>
+              </select>
+            </div>
+            <div id="supplier-records" class="supplier-records" aria-live="polite"></div>
+          </div>
+        </section>
+      </details>
+
+      <details class="delivery-section" data-permission="deliveries">
+        <summary class="delivery-toggle">
+          <span class="delivery-toggle-icon" aria-hidden="true">＋</span>
+          <span>
+            <span class="delivery-toggle-title">Entregas e inventario</span>
+            <span class="delivery-toggle-copy">Consulta pedidos por voz y revisa faltantes</span>
+          </span>
+        </summary>
+        <section class="delivery-panel" aria-labelledby="delivery-title">
+          <div class="delivery-heading">
+            <div>
+              <p class="eyebrow">SOLO PERSONAL AUTORIZADO</p>
+              <h2 id="delivery-title">Disponibilidad de entregas</h2>
+            </div>
+            <span id="delivery-reference-date" class="delivery-reference"></span>
+          </div>
+          <p class="delivery-notice">
+            Los archivos de entregas e inventario contienen datos ficticios y con fecha de corte;
+            confirma existencias y pedidos en los sistemas oficiales antes de surtirlos.
+            Solo usuarios con permiso de Logística o Administrador pueden consultar este apartado.
+          </p>
+          <div class="section-session-controls">
+            <p id="delivery-user-status" class="section-user-status"></p>
+            <button id="delivery-load-button" class="send-button" type="button" disabled>Consultar entregas</button>
+          </div>
+          <p id="delivery-status" class="delivery-status" role="status" aria-live="polite">
+            Consulta no configurada. Contacta al administrador.
+          </p>
+          <div id="delivery-results" class="delivery-results" hidden>
+            <div class="delivery-summary" aria-label="Resumen de entregas">
+              <div class="delivery-summary-item delivery-summary-ready">
+                <span>Se pueden surtir</span>
+                <strong id="delivery-count-ready">0</strong>
+              </div>
+              <div class="delivery-summary-item delivery-summary-shortage">
+                <span>Con faltantes</span>
+                <strong id="delivery-count-shortage">0</strong>
+              </div>
+              <div class="delivery-summary-item delivery-summary-delivered">
+                <span>Entregadas</span>
+                <strong id="delivery-count-delivered">0</strong>
+              </div>
+            </div>
+            <form id="delivery-question-form" class="delivery-question-form">
+              <label for="delivery-question">Pregunta por una entrega o producto</label>
+              <textarea
+                id="delivery-question"
+                name="delivery-question"
+                rows="2"
+                maxlength="300"
+                placeholder="Ej.: ¿Qué pedidos tienen faltantes?"
+                aria-label="Pregunta sobre una entrega o el inventario"
+                required
+              ></textarea>
+              <div class="delivery-question-actions">
+                <button
+                  id="delivery-dictate-button"
+                  class="icon-button"
+                  type="button"
+                  aria-label="Dictar pregunta de entregas"
+                  title="Dictar pregunta de entregas"
+                  hidden
+                >Preguntar por voz</button>
+                <button id="delivery-ask-button" class="send-button" type="submit">
+                  Consultar
+                </button>
+              </div>
+            </form>
+            <p id="delivery-answer" class="delivery-answer" role="status" aria-live="polite"></p>
+            <div class="delivery-filter">
+              <label for="delivery-filter">Mostrar</label>
+              <select id="delivery-filter" aria-label="Filtrar entregas">
+                <option value="all">Todas</option>
+                <option value="ready">Se pueden surtir</option>
+                <option value="shortage">Con faltantes</option>
+                <option value="delivered">Entregadas</option>
+                <option value="unknown">Producto sin coincidencia</option>
+              </select>
+            </div>
+            <div id="delivery-records" class="delivery-records" aria-live="polite"></div>
+            <button
+              id="delivery-prepare-notification"
+              class="icon-button"
+              type="button"
+              hidden
+            >Preparar aviso de faltantes</button>
+            <div id="delivery-notification" class="delivery-notification" hidden>
+              <p id="delivery-notification-status" class="delivery-status" role="status" aria-live="polite"></p>
+              <p class="delivery-notice">
+                El aviso se prepara para que lo compartas por el canal autorizado; no se envía automáticamente.
+                No hay contactos de proveedores en los documentos disponibles.
+              </p>
+              <textarea
+                id="delivery-notification-message"
+                rows="5"
+                readonly
+                aria-label="Aviso preparado para encargados de proveedores"
+              ></textarea>
+              <button id="delivery-share-button" class="icon-button" type="button">
+                Compartir o copiar aviso
+              </button>
+            </div>
+          </div>
+        </section>
+      </details>
+
+      <details class="sales-section" data-permission="sales">
+        <summary class="sales-toggle">
+          <span class="sales-toggle-icon" aria-hidden="true">＋</span>
+          <span>
+            <span class="sales-toggle-title">Ventas y desempeño</span>
+            <span class="sales-toggle-copy">Entregas realizadas, productos y mejores clientes</span>
+          </span>
+        </summary>
+        <section class="sales-panel" aria-labelledby="sales-title">
+          <div class="sales-heading">
+            <div>
+              <p class="eyebrow">SOLO PERSONAL AUTORIZADO</p>
+              <h2 id="sales-title">Ventas y desempeño comercial</h2>
+            </div>
+            <span id="sales-reference-date" class="sales-reference"></span>
+          </div>
+          <p class="sales-notice">
+            El resumen considera únicamente entregas marcadas como realizadas. Los documentos
+            disponibles son ficticios. No incluyen cobros de clientes ni precios de venta;
+            por eso el importe recaudado no está disponible.
+          </p>
+          <div class="section-session-controls">
+            <p id="sales-user-status" class="section-user-status"></p>
+            <button id="sales-load-button" class="send-button" type="button" disabled>Consultar ventas</button>
+          </div>
+          <p id="sales-status" class="sales-status" role="status" aria-live="polite">
+            Consulta no configurada. Contacta al administrador.
+          </p>
+          <div id="sales-results" class="sales-results" hidden>
+            <div class="sales-summary" aria-label="Resumen de ventas">
+              <article class="sales-summary-card">
+                <span>Entregas realizadas</span>
+                <strong id="sales-count-delivered">0</strong>
+                <small>Solo pedidos marcados como entregados</small>
+              </article>
+              <article class="sales-summary-card">
+                <span>Unidades entregadas</span>
+                <strong id="sales-units-sold">0</strong>
+                <small>Según cantidades del registro</small>
+              </article>
+              <article class="sales-summary-card">
+                <span>Importe recaudado</span>
+                <strong id="sales-revenue">Sin datos</strong>
+                <small>No hay pagos de clientes registrados</small>
+              </article>
+            </div>
+            <div class="sales-chart-grid">
+              <article class="sales-chart-card">
+                <h3>Entregas realizadas por mes</h3>
+                <p>Conteo de entregas confirmadas, no montos cobrados.</p>
+                <div id="sales-month-chart" class="sales-chart" aria-live="polite"></div>
+              </article>
+              <article class="sales-chart-card">
+                <h3>Productos más vendidos</h3>
+                <p>Ordenados por unidades marcadas como entregadas.</p>
+                <div id="sales-product-chart" class="sales-chart" aria-live="polite"></div>
+              </article>
+              <article class="sales-chart-card sales-pie-card">
+                <h3>Distribución de unidades por producto</h3>
+                <p>Proporción de todas las unidades entregadas por producto.</p>
+                <div class="sales-pie-layout">
+                  <div
+                    id="sales-product-pie"
+                    class="sales-pie"
+                    role="img"
+                    aria-label="Distribución de unidades entregadas por producto"
+                  >
+                    <div class="sales-pie-center">
+                      <strong id="sales-pie-total">0</strong>
+                      <span>unidades</span>
+                    </div>
+                  </div>
+                  <ul id="sales-pie-legend" class="sales-pie-legend" aria-label="Productos y proporción de unidades"></ul>
+                </div>
+              </article>
+              <article class="sales-chart-card">
+                <h3>Mejores clientes</h3>
+                <p>Clasificación por unidades recibidas; no representa pagos.</p>
+                <div id="sales-customer-chart" class="sales-chart" aria-live="polite"></div>
+              </article>
+            </div>
+            <p id="sales-data-note" class="sales-data-note"></p>
+          </div>
+        </section>
+      </details>
+
+      <section id="admin-users-panel" class="admin-panel" data-permission="user_admin" aria-labelledby="admin-users-title">
+        <p class="eyebrow">ADMINISTRACIÓN</p>
+        <h2 id="admin-users-title">Administración de usuarios</h2>
+        <form id="create-user-form" class="admin-form">
+          <label for="new-user-name">Nombre completo</label>
+          <input id="new-user-name" name="name" maxlength="120" required>
+          <label for="new-user-username">Usuario</label>
+          <input id="new-user-username" name="username" maxlength="50" autocomplete="off" required>
+          <label for="new-user-email">Correo electrónico</label>
+          <input id="new-user-email" name="email" type="email" maxlength="254">
+          <label for="new-user-department">Departamento</label>
+          <input id="new-user-department" name="department" maxlength="120">
+          <label for="new-user-role">Rol</label>
+          <select id="new-user-role" name="role" required></select>
+          <button class="send-button" type="submit">Crear usuario</button>
+        </form>
+        <p id="admin-user-status" class="auth-status" role="status" aria-live="polite"></p>
+        <div id="user-editor" class="user-editor" hidden></div>
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="user-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="role-settings-panel" class="admin-panel" data-permission="role_admin" aria-labelledby="role-settings-title">
+        <p class="eyebrow">CONTROL DE ACCESO</p>
+        <h2 id="role-settings-title">Gestión de roles y permisos</h2>
+        <form id="role-permissions-form" class="admin-form">
+          <label for="role-permissions-select">Rol editable</label>
+          <select id="role-permissions-select" name="role"></select>
+          <fieldset id="role-permission-options">
+            <legend>Permisos de módulos</legend>
+          </fieldset>
+          <button class="send-button" type="submit">Guardar permisos</button>
+        </form>
+        <p id="role-status" class="auth-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="audit-panel" class="admin-panel" data-permission="audit" aria-labelledby="audit-title">
+        <p class="eyebrow">REGISTRO DEL SISTEMA</p>
+        <h2 id="audit-title">Bitácora de actividades</h2>
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Usuario</th><th>Acción</th><th>Fecha y hora</th><th>IP</th><th>Detalle</th></tr>
+            </thead>
+            <tbody id="audit-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="settings-panel" class="admin-panel" data-permission="settings" aria-labelledby="settings-title">
+        <p class="eyebrow">SISTEMA</p>
+        <h2 id="settings-title">Configuración</h2>
+        <p>La autenticación usa sesiones con expiración, cookies protegidas y permisos administrados por roles.</p>
+      </section>
+
+      <footer class="page-footer">Una conversación clara empieza con una buena pregunta.</footer>
+      </div>
+      </div>
+    </main>
+  </body>
+</html>
