@@ -26,6 +26,7 @@ Aplicación web (HTML, CSS y JavaScript vanilla) con un backend Node.js + Expres
 - 🚚 **Entregas**: asignación por fecha programada con base en `Entregas.md` e `InventarioGeneral.md`, sin reservar existencias reales.
 - 📊 **Ventas**: resumen de entregas realizadas por mes, producto y cliente, con gráfica circular.
 - ✅ Permisos verificados en la interfaz y en cada endpoint.
+- 🌗 **Tema claro y oscuro**: un botón en la cabecera (icono de luna/sol) alterna entre ambos temas. El tema oscuro es el predeterminado; la elección se recuerda en el navegador (solo se guarda la preferencia de tema, nunca tokens ni contraseñas). El color de la barra del navegador en móvil también se adapta al tema.
 
 ### 👥 Usuarios y roles iniciales
 
